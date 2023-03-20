@@ -93,8 +93,9 @@ class main(object):
 
 
       prompt = "<form method='POST' action='/plan_lekcji_admin_edycja_submit'>"
+      prompt += f"<input name='id' value={id}>"
       for y in range(5):
-         prompt+= "<select>"
+         prompt+= f"<select name='dane{y+1}'>"
          for i in range(len(przedmiot_db)):
             if przedmiot_db[i][1] == plan_lekcji_db[0][y+3]:
                prompt+= f"<option selected>{przedmiot_db[i][1]}</option>"
@@ -110,15 +111,6 @@ class main(object):
 
       return plan_lekcji_admin.replace("{table}", prompt)
 
-
-
-
-
-
-
-
-
-      
 
    @cherrypy.expose
    def plan_lekcji_admin_edycja_submit(self, dane1, dane2, dane3, dane4, dane5, id):

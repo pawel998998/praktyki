@@ -34,7 +34,8 @@ with open("e_dziennik/plan_lekcji.html", encoding="utf-8") as template:
 with open("admin/plan_lekcji_admin.html", encoding="utf-8") as template:
    plan_lekcji_admin = template.read()
 
-
+with open("admin/plan_lekcji_admin_edycja.html", encoding="utf-8") as template:
+   plan_lekcji_admin_edycja = template.read()
 
 class main(object):
    @cherrypy.expose
@@ -68,7 +69,50 @@ class main(object):
 
    @cherrypy.expose
    def plan_lekcji_admin(self):
-      return plan_lekcji_admin
+
+      plan_lekcji_srodek = ""
+
+      mycursor.execute("select * from plan_lekcji")
+      plan_lekcji_db = mycursor.fetchall()
+
+      plan_lekcji_template_poczatek = "<table><thead><tr><th>Godzina</th><th>Poniedziałek</th><th>Wtorek</th><th>Środa</th><th>Czwartek</th><th>Piątek</th></tr></thead>"
+      for i in range(len(plan_lekcji_db)):
+         plan_lekcji_template_srodek = f"<tbody><tr><tr><td>{plan_lekcji_db[i][1]} - {plan_lekcji_db[i][2]}</td><td>{plan_lekcji_db[i][3]}</td><td>{plan_lekcji_db[i][4]}</td><td>{plan_lekcji_db[i][5]}</td><td>{plan_lekcji_db[i][6]}</td><td>{plan_lekcji_db[i][7]}</td></td><td><a href='plan_lekcji_admin_edycja?id={plan_lekcji_db[i][0]}'>Edycja</a></td></tbody>"
+         plan_lekcji_srodek += plan_lekcji_template_srodek
+      plan_lekcji_template_koniec = "</table>"
+
+      plan_lekcji_template = f"{plan_lekcji_template_poczatek}{plan_lekcji_srodek}{plan_lekcji_template_koniec}"
+      return plan_lekcji_admin.replace("{table}", plan_lekcji_template)
+
+   @cherrypy.expose
+   def plan_lekcji_admin_edycja(self, id):
+
+      mycursor.execute(f"select * from plan_lekcji where id = '{id}'")
+      plan_lekcji_row = mycursor.fetchall()
+
+      for i in range(len(plan_lekcji_row)):
+         plan_lekcji_template = f"""
+         <form method='POST' action='/plan_lekcji_admin_edycja_submit'>
+         <input value='{id}' name='id'>
+         <select selected='{plan_lekcji_row[i][1]}' name='dane1'><option value='WF'>WF</option><option value='Rosyjski'>Rosyjski</option><option value='Niemiecki'>Niemiecki</option><option value='Matematyka'>Matematyka</option><option value='Angielski'>Angielski</option></select>
+         <select selected='{plan_lekcji_row[i][2]}' name='dane2'><option value='WF'>WF</option><option value='Rosyjski'>Rosyjski</option><option value='Niemiecki'>Niemiecki</option><option value='Matematyka'>Matematyka</option><option value='Angielski'>Angielski</option></select>
+         <select selected='{plan_lekcji_row[i][3]}' name='dane3'><option value='WF'>WF</option><option value='Rosyjski'>Rosyjski</option><option value='Niemiecki'>Niemiecki</option><option value='Matematyka'>Matematyka</option><option value='Angielski'>Angielski</option></select>
+         <select selected='{plan_lekcji_row[i][4]}' name='dane4'><option value='WF'>WF</option><option value='Rosyjski'>Rosyjski</option><option value='Niemiecki'>Niemiecki</option><option value='Matematyka'>Matematyka</option><option value='Angielski'>Angielski</option></select>
+         <select selected='{plan_lekcji_row[i][5]}' name='dane5'><option value='WF'>WF</option><option value='Rosyjski'>Rosyjski</option><option value='Niemiecki'>Niemiecki</option><option value='Matematyka'>Matematyka</option><option value='Angielski'>Angielski</option></select>
+         <button type='submit'>Zapisz</button></form>
+
+         """
+
+      return plan_lekcji_admin_edycja.replace("{table}", plan_lekcji_template)
+
+   @cherrypy.expose
+   def plan_lekcji_admin_edycja_submit(self, dane1, dane2, dane3, dane4, dane5, id):
+      mycursor.execute(f"UPDATE `plan_lekcji` SET `poniedziałek` = '{dane1}', `wtorek` = '{dane2}', `sroda` = '{dane3}', `czwartek` = '{dane4}', `piatek` = '{dane5}' WHERE `plan_lekcji`.`id` = {id};")
+      mydb.commit()
+      raise cherrypy.HTTPRedirect("/plan_lekcji_admin")
+
+
+
 
    @cherrypy.expose
    def login(self, email, password):

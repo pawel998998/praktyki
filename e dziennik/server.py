@@ -44,7 +44,10 @@ with open("login_register/register.html", encoding="utf-8") as template:
    register_page = template.read()
 
 with open("e_dziennik/template.html", encoding="utf-8") as template:
-   template = template.read()
+   szablon = template.read()
+
+with open("email/email.html", encoding="utf-8") as template:
+   email_template = template.read()
 
 class main(object):
    @cherrypy.expose
@@ -54,7 +57,6 @@ class main(object):
    @cherrypy.expose
    def clear_cookies(self):
       for cookie_name in cherrypy.request.cookie:
-         #return str(cherrypy.response.cookie)
          cherrypy.response.cookie[cookie_name]['expires'] = 0
       raise cherrypy.HTTPRedirect("/index_login_page")
 
@@ -74,12 +76,12 @@ class main(object):
       zadania_srodek = ""
       mycursor.execute("select * from zadania")
       zadania_db = mycursor.fetchall()
-      zadania_template_poczatek = "<table><thead><tr><th>data</th><th>zadanie</th><th>przedmiot</th><th>opis</th></tr></thead>"
+      zadania_szablon_poczatek = "<table><thead><tr><th>data</th><th>zadanie</th><th>przedmiot</th><th>opis</th></tr></thead>"
       for i in range(len(zadania_db)):
-         zadania_template_srodek = f"<tbody><tr><td>{zadania_db[i][4]}</td><td>{zadania_db[i][1]}</td><td>{zadania_db[i][3]}</td><td>{zadania_db[i][2]}</td></tr></tbody>"
-         zadania_srodek += zadania_template_srodek
-      zadania_template_koniec = "</table>"
-      zadania_template = f"{zadania_template_poczatek}{zadania_srodek}{zadania_template_koniec}"
+         zadania_szablon_srodek = f"<tbody><tr><td>{zadania_db[i][4]}</td><td>{zadania_db[i][1]}</td><td>{zadania_db[i][3]}</td><td>{zadania_db[i][2]}</td></tr></tbody>"
+         zadania_srodek += zadania_szablon_srodek
+      zadania_szablon_koniec = "</table>"
+      zadania_szablon = f"{zadania_szablon_poczatek}{zadania_srodek}{zadania_szablon_koniec}"
       if cherrypy.session.get('logged_in'):
          mycursor.execute("select email from admin")
          admin_db = mycursor.fetchall()
@@ -92,7 +94,7 @@ class main(object):
          if admin == True:
             raise cherrypy.HTTPRedirect('/zadania_admin')         
          else:
-            return template.replace("{table}", zadania_template).replace("{subject}", "Zadania")
+            return szablon.replace("{table}", zadania_szablon).replace("{subject}", "Zadania").replace("{user}", cherrypy.session["user"])
 
       else:
          raise cherrypy.HTTPRedirect('/index_login_page')
@@ -103,12 +105,12 @@ class main(object):
       zadania_srodek = ""
       mycursor.execute("select * from zadania")
       zadania_db = mycursor.fetchall()
-      zadania_template_poczatek = "<table><thead><tr><th>data</th><th>zadanie</th><th>przedmiot</th><th>opis</th><th>Edytowanie</th></tr></thead>"
+      zadania_szablon_poczatek = "<table><thead><tr><th>data</th><th>zadanie</th><th>przedmiot</th><th>opis</th><th>Edytowanie</th></tr></thead>"
       for i in range(len(zadania_db)):
-         zadania_template_srodek = f"<tbody><tr><td>{zadania_db[i][4]}</td><td>{zadania_db[i][1]}</td><td>{zadania_db[i][3]}</td><td>{zadania_db[i][2]}</td><td><a class='abcd'  href='zadania_admin_edycja?id={zadania_db[i][0]}'>Edytuj</a><a class='abcd'  href='zadania_admin_usun?id={zadania_db[i][0]}'>Usuń</a></td></tr></tbody>"
-         zadania_srodek += zadania_template_srodek
-      zadania_template_koniec = "</table>"
-      zadania_template = f"{zadania_template_poczatek}{zadania_srodek}<a class='wyloguj abcd'  href='zadania_admin_dodaj'>Dodaj</a>{zadania_template_koniec}"
+         zadania_szablon_srodek = f"<tbody><tr><td>{zadania_db[i][4]}</td><td>{zadania_db[i][1]}</td><td>{zadania_db[i][3]}</td><td>{zadania_db[i][2]}</td><td><a class='abcd'  href='zadania_admin_edycja?id={zadania_db[i][0]}'>Edytuj</a><a class='abcd'  href='zadania_admin_usun?id={zadania_db[i][0]}'>Usuń</a></td></tr></tbody>"
+         zadania_srodek += zadania_szablon_srodek
+      zadania_szablon_koniec = "</table>"
+      zadania_szablon = f"{zadania_szablon_poczatek}{zadania_srodek}<a class='wyloguj abcd'  href='zadania_admin_dodaj'>Dodaj</a>{zadania_szablon_koniec}"
       if cherrypy.session.get('logged_in'):
          mycursor.execute("select email from admin")
          admin_db = mycursor.fetchall()
@@ -119,7 +121,7 @@ class main(object):
             else:
                admin = False
          if admin == True:
-            return template.replace("{table}", zadania_template).replace("{subject}", "Zadania")
+            return szablon.replace("{table}", zadania_szablon).replace("{subject}", "Zadania").replace("{user}", cherrypy.session["user"])
          else:
             raise cherrypy.HTTPRedirect('/zadania')
       else:
@@ -146,7 +148,7 @@ class main(object):
       prompt +="<td><button type='submit'>Zapisz</button></form></td>"
       prompt += "</table>"
       if cherrypy.session.get('logged_in'):
-         return template.replace("{table}", prompt).replace("{subject}", "Zadania")
+         return szablon.replace("{table}", prompt).replace("{subject}", "Zadania").replace("{user}", cherrypy.session["user"])
       else:
          raise cherrypy.HTTPRedirect('/index_login_page')
 
@@ -172,7 +174,7 @@ class main(object):
       prompt += f"<td><input placeholder='opis' type='input' name='opis'></td>"
       prompt +="<td><button type='submit'>Zapisz</button></td></table></form>"
       if cherrypy.session.get('logged_in'):
-         return template.replace("{table}", prompt).replace("{subject}", "Zadania")
+         return szablon.replace("{table}", prompt).replace("{subject}", "Zadania").replace("{user}", cherrypy.session["user"])
       else:
          raise cherrypy.HTTPRedirect('/index_login_page')
       
@@ -216,12 +218,12 @@ class main(object):
       plan_lekcji_srodek = ""
       mycursor.execute("select * from plan_lekcji")
       plan_lekcji_db = mycursor.fetchall()
-      plan_lekcji_template_poczatek = "<table><thead><tr><th>Godzina</th><th>Poniedziałek</th><th>Wtorek</th><th>Środa</th><th>Czwartek</th><th>Piątek</th></tr></thead>"
+      plan_lekcji_szablon_poczatek = "<table><thead><tr><th>Godzina</th><th>Poniedziałek</th><th>Wtorek</th><th>Środa</th><th>Czwartek</th><th>Piątek</th></tr></thead>"
       for i in range(len(plan_lekcji_db)):
-         plan_lekcji_template_srodek = f"<tbody><tr><tr><td>{plan_lekcji_db[i][1]} - {plan_lekcji_db[i][2]}</td><td>{plan_lekcji_db[i][3]}</td><td>{plan_lekcji_db[i][4]}</td><td>{plan_lekcji_db[i][5]}</td><td>{plan_lekcji_db[i][6]}</td><td>{plan_lekcji_db[i][7]}</td></td></tbody>"
-         plan_lekcji_srodek += plan_lekcji_template_srodek
-      plan_lekcji_template_koniec = "</table>"
-      plan_lekcji_template = f"{plan_lekcji_template_poczatek}{plan_lekcji_srodek}{plan_lekcji_template_koniec}"
+         plan_lekcji_szablon_srodek = f"<tbody><tr><tr><td>{plan_lekcji_db[i][1]} - {plan_lekcji_db[i][2]}</td><td>{plan_lekcji_db[i][3]}</td><td>{plan_lekcji_db[i][4]}</td><td>{plan_lekcji_db[i][5]}</td><td>{plan_lekcji_db[i][6]}</td><td>{plan_lekcji_db[i][7]}</td></td></tbody>"
+         plan_lekcji_srodek += plan_lekcji_szablon_srodek
+      plan_lekcji_szablon_koniec = "</table>"
+      plan_lekcji_szablon = f"{plan_lekcji_szablon_poczatek}{plan_lekcji_srodek}{plan_lekcji_szablon_koniec}"
       if cherrypy.session.get('logged_in'):
          mycursor.execute("select email from admin")
          admin_db = mycursor.fetchall()
@@ -234,7 +236,7 @@ class main(object):
          if admin == True:
             raise cherrypy.HTTPRedirect('/plan_lekcji_admin')
          else:
-            return template.replace("{table}", plan_lekcji_template).replace("{subject}", "Plan lekcji")
+            return szablon.replace("{table}", plan_lekcji_szablon).replace("{subject}", "Plan lekcji").replace("{user}", cherrypy.session["user"])
       else:
          raise cherrypy.HTTPRedirect('/index_login_page')
       
@@ -244,14 +246,14 @@ class main(object):
       plan_lekcji_srodek = ""
       mycursor.execute("select * from plan_lekcji")
       plan_lekcji_db = mycursor.fetchall()
-      plan_lekcji_template_poczatek = "<table><thead><tr><th>Godzina</th><th>Poniedziałek</th><th>Wtorek</th><th>Środa</th><th>Czwartek</th><th>Piątek</th><th>Edytowanie</th></tr></thead>"
+      plan_lekcji_szablon_poczatek = "<table><thead><tr><th>Godzina</th><th>Poniedziałek</th><th>Wtorek</th><th>Środa</th><th>Czwartek</th><th>Piątek</th><th>Edytowanie</th></tr></thead>"
       for i in range(len(plan_lekcji_db)):
-         plan_lekcji_template_srodek = f"<tbody><tr><tr><td>{plan_lekcji_db[i][1]} - {plan_lekcji_db[i][2]}</td><td>{plan_lekcji_db[i][3]}</td><td>{plan_lekcji_db[i][4]}</td><td>{plan_lekcji_db[i][5]}</td><td>{plan_lekcji_db[i][6]}</td><td>{plan_lekcji_db[i][7]}</td><td><a class='abcd'  href='plan_lekcji_admin_edycja?id={plan_lekcji_db[i][0]}'>Edytuj</a><a class='abcd'  href='plan_lekcji_admin_usun?id={plan_lekcji_db[i][0]}'>Usuń</a></td></tbody>"
-         plan_lekcji_srodek += plan_lekcji_template_srodek
-      plan_lekcji_template_koniec = "</table>"
-      plan_lekcji_template = f"{plan_lekcji_template_poczatek}{plan_lekcji_srodek}<a class='wyloguj abcd'  href='plan_lekcji_admin_dodaj'>Dodaj</a>{plan_lekcji_template_koniec}"
+         plan_lekcji_szablon_srodek = f"<tbody><tr><tr><td>{plan_lekcji_db[i][1]} - {plan_lekcji_db[i][2]}</td><td>{plan_lekcji_db[i][3]}</td><td>{plan_lekcji_db[i][4]}</td><td>{plan_lekcji_db[i][5]}</td><td>{plan_lekcji_db[i][6]}</td><td>{plan_lekcji_db[i][7]}</td><td><a class='abcd'  href='plan_lekcji_admin_edycja?id={plan_lekcji_db[i][0]}'>Edytuj</a><a class='abcd'  href='plan_lekcji_admin_usun?id={plan_lekcji_db[i][0]}'>Usuń</a></td></tbody>"
+         plan_lekcji_srodek += plan_lekcji_szablon_srodek
+      plan_lekcji_szablon_koniec = "</table>"
+      plan_lekcji_szablon = f"{plan_lekcji_szablon_poczatek}{plan_lekcji_srodek}<a class='wyloguj abcd'  href='plan_lekcji_admin_dodaj'>Dodaj</a>{plan_lekcji_szablon_koniec}"
       if cherrypy.session.get('logged_in'):
-         return template.replace("{table}", plan_lekcji_template).replace("{subject}", "Plan lekcji")
+         return szablon.replace("{table}", plan_lekcji_szablon).replace("{subject}", "Plan lekcji").replace("{user}", cherrypy.session["user"])
       else:
          raise cherrypy.HTTPRedirect('/index_login_page')
 
@@ -276,7 +278,7 @@ class main(object):
          prompt+= "</select></td>"
       prompt +="<td><button type='submit'>Zapisz</button></td></table></form>"
       if cherrypy.session.get('logged_in'):
-         return template.replace("{table}", prompt).replace("{subject}", "Plan lekcji")
+         return szablon.replace("{table}", prompt).replace("{subject}", "Plan lekcji").replace("{user}", cherrypy.session["user"])
       else:
          raise cherrypy.HTTPRedirect('/index_login_page')
       
@@ -313,7 +315,7 @@ class main(object):
             else:
                admin = False
          if admin == True:
-            return template.replace("{table}", prompt).replace("{subject}", "Plan lekcji")
+            return szablon.replace("{table}", prompt).replace("{subject}", "Plan lekcji").replace("{user}", cherrypy.session["user"])
          else:
             raise cherrypy.HTTPRedirect('/plan_lekcji')
       else:
@@ -432,13 +434,7 @@ class main(object):
          msg["From"] = login
          msg["To"] = email
          msg["Subject"] = "Rejestracja"
-         body = f"""
-         <h1>Rejestracja</h1>
-         <p>Pomyślnie zarejestrowales się. Dane:</p></br>
-         <p>Imię: {firstname}</p></br>
-         <p>Nazwisko: {lastname}</p></br>
-         <p>Email: {email}</p></br>
-         """
+         body = email_template
          msg.attach(MIMEText(body, "html"))
          try:
             server = smtplib.SMTP("smtp.gmail.com", 587)
@@ -470,12 +466,12 @@ class main(object):
       sprawdziany_srodek = ""
       mycursor.execute("select * from sprawdziany")
       sprawdziany_db = mycursor.fetchall()
-      sprawdziany_template_poczatek = "<table><thead><tr><th>data</th><th>przedmiot</th><th>opis</th></tr></thead>"
+      sprawdziany_szablon_poczatek = "<table><thead><tr><th>data</th><th>przedmiot</th><th>opis</th></tr></thead>"
       for i in range(len(sprawdziany_db)):
-         sprawdziany_template_srodek = f"<tbody><tr><td>{sprawdziany_db[i][2]}</td><td>{sprawdziany_db[i][1]}</td><td>{sprawdziany_db[i][3]}</td></tr></tbody>"
-         sprawdziany_srodek += sprawdziany_template_srodek
-      sprawdziany_template_koniec = "</table>"
-      sprawdziany_template = f"{sprawdziany_template_poczatek}{sprawdziany_srodek}{sprawdziany_template_koniec}"
+         sprawdziany_szablon_srodek = f"<tbody><tr><td>{sprawdziany_db[i][2]}</td><td>{sprawdziany_db[i][1]}</td><td>{sprawdziany_db[i][3]}</td></tr></tbody>"
+         sprawdziany_srodek += sprawdziany_szablon_srodek
+      sprawdziany_szablon_koniec = "</table>"
+      sprawdziany_szablon = f"{sprawdziany_szablon_poczatek}{sprawdziany_srodek}{sprawdziany_szablon_koniec}"
       if cherrypy.session.get('logged_in'):
          mycursor.execute("select email from admin")
          admin_db = mycursor.fetchall()
@@ -489,7 +485,7 @@ class main(object):
          if admin == True:
             raise cherrypy.HTTPRedirect('/sprawdziany_admin')
          else:
-            return template.replace("{table}", sprawdziany_template).replace("{subject}", "Sprawdziany")
+            return szablon.replace("{table}", sprawdziany_szablon).replace("{subject}", "Sprawdziany").replace("{user}", cherrypy.session["user"])
       else:
          raise cherrypy.HTTPRedirect('/index_login_page')
 
@@ -500,12 +496,12 @@ class main(object):
       sprawdziany_srodek = ""
       mycursor.execute("select * from sprawdziany")
       sprawdziany_db = mycursor.fetchall()
-      sprawdziany_template_poczatek = "<table><thead><tr><th>data</th><th>przedmiot</th><th>opis</th><th>Edytowanie</th></tr></thead>"
+      sprawdziany_szablon_poczatek = "<table><thead><tr><th>data</th><th>przedmiot</th><th>opis</th><th>Edytowanie</th></tr></thead>"
       for i in range(len(sprawdziany_db)):
-         sprawdziany_template_srodek = f"<tbody><tr><td>{sprawdziany_db[i][2]}</td><td>{sprawdziany_db[i][1]}</td><td>{sprawdziany_db[i][3]}</td><td><a class='abcd'  href='sprawdziany_admin_edycja?id={sprawdziany_db[i][0]}'>Edytuj</a><a class='abcd'  href='sprawdziany_admin_usun?id={sprawdziany_db[i][0]}'>Usuń</a></td></tr></tbody>"
-         sprawdziany_srodek += sprawdziany_template_srodek
-      sprawdziany_template_koniec = "</table>"
-      sprawdziany_template = f"{sprawdziany_template_poczatek}{sprawdziany_srodek}<a class='wyloguj abcd'  href='sprawdziany_admin_dodaj'>Dodaj</a>{sprawdziany_template_koniec}"
+         sprawdziany_szablon_srodek = f"<tbody><tr><td>{sprawdziany_db[i][2]}</td><td>{sprawdziany_db[i][1]}</td><td>{sprawdziany_db[i][3]}</td><td><a class='abcd'  href='sprawdziany_admin_edycja?id={sprawdziany_db[i][0]}'>Edytuj</a><a class='abcd'  href='sprawdziany_admin_usun?id={sprawdziany_db[i][0]}'>Usuń</a></td></tr></tbody>"
+         sprawdziany_srodek += sprawdziany_szablon_srodek
+      sprawdziany_szablon_koniec = "</table>"
+      sprawdziany_szablon = f"{sprawdziany_szablon_poczatek}{sprawdziany_srodek}<a class='wyloguj abcd'  href='sprawdziany_admin_dodaj'>Dodaj</a>{sprawdziany_szablon_koniec}"
       if cherrypy.session.get('logged_in'):
          mycursor.execute("select email from admin")
          admin_db = mycursor.fetchall()
@@ -516,7 +512,7 @@ class main(object):
             else:
                admin = False
          if admin == True:
-            return template.replace("{table}", sprawdziany_template).replace("{subject}", "Sprawdziany")
+            return szablon.replace("{table}", sprawdziany_szablon).replace("{subject}", "Sprawdziany").replace("{user}", cherrypy.session["user"])
          else:
             raise cherrypy.HTTPRedirect('/sprawdziany')
       else:
@@ -538,7 +534,7 @@ class main(object):
       prompt += f"<td><input placeholder='opis' value='{opis_db[0][0]}' type='input' name='opis'></td>"
       prompt +="<td><button type='submit'>Zapisz</button></td></table></form>"
       if cherrypy.session.get('logged_in'):
-         return template.replace("{table}", prompt).replace("{subject}", "Sprawdziany")
+         return szablon.replace("{table}", prompt).replace("{subject}", "Sprawdziany").replace("{user}", cherrypy.session["user"])
       else:
          raise cherrypy.HTTPRedirect('/index_login_page')
 
@@ -574,7 +570,7 @@ class main(object):
                admin = False
          if admin == True:
 
-            return template.replace("{table}", prompt).replace("{subject}", "Sprawdziany")
+            return szablon.replace("{table}", prompt).replace("{subject}", "Sprawdziany").replace("{user}", cherrypy.session["user"])
          else:
             raise cherrypy.HTTPRedirect('/sprawdziany')
       else:
@@ -614,9 +610,9 @@ class main(object):
 
    @cherrypy.expose
    def oceny(self):
-      mycursor.execute(f"select id from logowanie where `email` = {cherrypy.session['user']}")
+      mycursor.execute(f"select id from logowanie where `email` = '{cherrypy.session['user']}'")
       id_query_usera = mycursor.fetchall()
-      mycursor.execute(f"SELECT oceny.ocena, oceny.typ, oceny.data, oceny.id_przedmiot, przedmiot.nazwa FROM oceny INNER JOIN przedmiot ON oceny.id_przedmiot = przedmiot.id WHERE oceny.id_ucznia = '{id_query_usera[0][0]}'")
+      mycursor.execute(f"SELECT oceny.ocena, oceny.typ, oceny.data, oceny.id_przedmiot, przedmiot.nazwa FROM oceny INNER JOIN przedmiot ON oceny.id_przedmiot = przedmiot.id WHERE oceny.id = '{id_query_usera[0][0]}'")
       oceny_db = mycursor.fetchall()
       prompt = "<table><thead><tr><th>data</th><th>ocena</th><th>przedmiot</th><th>typ</th></tr></thead>"
       for i in range(len(oceny_db)):
@@ -625,9 +621,200 @@ class main(object):
          prompt += f"<td>{oceny_db[i][4]}</td>"
          prompt += f"<td>{oceny_db[i][1]}</td></tr>"
       prompt += "</table>"
+      if cherrypy.session.get('logged_in'):
+         mycursor.execute("select email from admin")
+         admin_db = mycursor.fetchall()
 
-      return template.replace("{table}", prompt).replace("{subject}", "Oceny")
+         for i in range(len(admin_db)):
+            if cherrypy.session["user"] == admin_db[0][i]:
+               admin = True
+            else:
+               admin = False
+         if admin == True:
+            raise cherrypy.HTTPRedirect('/oceny_admin_wybieranie')         
+         else:
+            return szablon.replace("{table}", prompt).replace("{subject}", "Oceny").replace("{user}", cherrypy.session["user"])
+      else:
+         raise cherrypy.HTTPRedirect('/index_login_page')
 
+
+   @cherrypy.expose
+   def oceny_admin_wybieranie(self):
+      mycursor.execute(f"SELECT firstname, lastname, id FROM logowanie WHERE email NOT IN (SELECT email FROM admin)")
+      lista_uczniow = mycursor.fetchall()
+      prompt = "<form method='POST' action='/oceny_admin'><table><thead><tr><th>Uczeń</th><th>Wybierz</th></tr></thead>"
+      prompt += "<td><select name='uczen'>"
+      for i in range(len(lista_uczniow)):
+         prompt += f"<option>{lista_uczniow[i][0]} {lista_uczniow[i][1]}-{lista_uczniow[i][2]}</option>"
+      prompt += "</select></td>"
+
+      prompt += f"<td><button type='submit'>Wybierz</button></td>"
+      prompt += "</table></form>"
+      if cherrypy.session.get('logged_in'):
+         mycursor.execute("select email from admin")
+         admin_db = mycursor.fetchall()
+
+         for i in range(len(admin_db)):
+            if cherrypy.session["user"] == admin_db[0][i]:
+               admin = True
+            else:
+               admin = False
+         if admin == True:
+            return szablon.replace("{table}", prompt).replace("{subject}", "Oceny").replace("{user}", cherrypy.session["user"])
+         else:
+            raise cherrypy.HTTPRedirect('/oceny')
+      else:
+         raise cherrypy.HTTPRedirect('/index_login_page')
+
+   @cherrypy.expose
+   def oceny_admin(self, uczen):
+      uczen = uczen.split("-")
+      if cherrypy.session.get('logged_in'):
+         mycursor.execute("select email from admin")
+         admin_db = mycursor.fetchall()
+
+         for i in range(len(admin_db)):
+            if cherrypy.session["user"] == admin_db[0][i]:
+               admin = True
+            else:
+               admin = False
+         if admin == True:
+            try:
+               uczen = uczen[1]
+            except:
+               uczen = uczen[0]
+            mycursor.execute(f"SELECT oceny.ocena, oceny.typ, oceny.data, oceny.id_przedmiot, przedmiot.nazwa FROM oceny INNER JOIN przedmiot ON oceny.id_przedmiot = przedmiot.id WHERE oceny.id = '{uczen}'")
+            oceny_db = mycursor.fetchall()
+            prompt = f"<a class='wyloguj abcd'  href='/oceny_admin_dodaj?uczen={uczen}'>Dodaj</a><table><thead><tr><th>data</th><th>ocena</th><th>przedmiot</th><th>typ</th><th>Edytowanie</th></tr></thead>"
+            for i in range(len(oceny_db)):
+               prompt += f"<tr><td>{oceny_db[i][2]}</td>"
+               prompt += f"<td>{oceny_db[i][0]}</td>"
+               prompt += f"<td>{oceny_db[i][4]}</td>"
+               prompt += f"<td>{oceny_db[i][1]}</td>"
+               prompt += f"<td><a href='/oceny_admin_edycja?uczen={uczen}'>Edycja</a><a href='/oceny_admin_usun?uczen={uczen}'>Usun</a></td></tr>"
+            prompt += "</table>"
+            return szablon.replace("{table}", prompt).replace("{subject}", "Oceny").replace("{user}", cherrypy.session["user"])
+         else:
+            raise cherrypy.HTTPRedirect('/oceny')
+      else:
+         raise cherrypy.HTTPRedirect('/index_login_page')
+   @cherrypy.expose
+   def oceny_admin_edycja(self, uczen):
+      mycursor.execute(f"select id, id_przedmiot, ocena, typ, data from oceny where id = '{uczen}'")
+      oceny_db = mycursor.fetchall()
+      mycursor.execute(f"select nazwa from przedmiot where id = {oceny_db[0][1]}")
+      przedmiot_db = mycursor.fetchall()
+      mycursor.execute(f"select nazwa from przedmiot")
+      przedmioty_db = mycursor.fetchall()
+      prompt = f"<form method='POST' action='oceny_admin_edycja_submit'>"
+      prompt += "<table><thead><tr><th>data</th><th>ocena</th><th>przedmiot</th><th>typ</th><th>Zapisywanie</th></tr></thead>"
+      prompt += f"<input name='id' value='{uczen}' type='hidden'>"
+      prompt += f"<td><input name='data' value='{oceny_db[0][4]}' type='date'></td>"
+      prompt += f"<td><input name='ocena' value='{oceny_db[0][2]}' type='numer'></td>"
+      prompt += "<td><select name='przedmiot'>"
+      for i in range(len(przedmioty_db)):
+         prompt += f"<option>{przedmioty_db[i-1][0]}</option>"
+      prompt += "</td></select>"
+      prompt += f"<td><input name='typ' value='{oceny_db[0][3]}' type='text'></td>"
+      prompt += f"<td><button type='submit'>Zapisz</button></td></table></form>"
+      if cherrypy.session.get('logged_in'):
+         mycursor.execute("select email from admin")
+         admin_db = mycursor.fetchall()
+
+         for i in range(len(admin_db)):
+            if cherrypy.session["user"] == admin_db[0][i]:
+               admin = True
+            else:
+               admin = False
+         if admin == True:
+            return szablon.replace("{table}", prompt).replace("{subject}", "Oceny").replace("{user}", cherrypy.session["user"])
+         else:
+            raise cherrypy.HTTPRedirect('/oceny')
+      else:
+         raise cherrypy.HTTPRedirect('/index_login_page')
+
+   @cherrypy.expose
+   def oceny_admin_edycja_submit(self, data, ocena, przedmiot, typ, id):
+      if cherrypy.session.get('logged_in'):
+         mycursor.execute("select email from admin")
+         admin_db = mycursor.fetchall()
+
+         for i in range(len(admin_db)):
+            if cherrypy.session["user"] == admin_db[0][i]:
+               admin = True
+            else:
+               admin = False
+         if admin == True:
+            mycursor.execute(f"select id from przedmiot where nazwa = '{przedmiot}'")
+            przedmiot_id = mycursor.fetchall()
+            mycursor.execute(f"UPDATE `oceny` SET `id_przedmiot` = '{przedmiot_id[0][0]}', `id` = '{id}' , `ocena` = '{ocena}', `typ` = '{typ}', `data` = '{data}' WHERE `oceny`.`id` = '{id}'")
+            mydb.commit()
+            raise cherrypy.HTTPRedirect(f"/oceny_admin?uczen={id}")
+         else:
+            raise cherrypy.HTTPRedirect('/oceny')
+      else:
+         raise cherrypy.HTTPRedirect('/index_login_page')
+
+   @cherrypy.expose
+   def oceny_admin_dodaj(self, uczen):
+      mycursor.execute(f"select nazwa from przedmiot")
+      przedmiot_db = mycursor.fetchall()
+      mycursor.execute(f"select nazwa from przedmiot")
+      przedmioty_db = mycursor.fetchall()
+      prompt = f"<form method='POST' action='oceny_admin_dodaj_submit'>"
+      prompt += "<table><thead><tr><th>data</th><th>ocena</th><th>przedmiot</th><th>typ</th><th>Zapisywanie</th></tr></thead>"
+      prompt += f"<input type='hidden' placeholder='id' value='{uczen}' name='uczen'>"
+      prompt += f"<td><input name='data' type='date'></td>"
+      prompt += f"<td><input name='ocena' type='numer'></td>"
+      prompt += "<td><select name='przedmiot'>"
+      for i in range(len(przedmioty_db)):
+         prompt += f"<option>{przedmioty_db[i-1][0]}</option>"
+      prompt += "</td></select>"
+      prompt += f"<td><input name='typ' type='text'></td>"
+      prompt += f"<td><button type='submit'>Zapisz</button></td></table></form>"
+      if cherrypy.session.get('logged_in'):
+         mycursor.execute("select email from admin")
+         admin_db = mycursor.fetchall()
+         for i in range(len(admin_db)):
+            if cherrypy.session["user"] == admin_db[0][i]:
+               admin = True
+            else:
+               admin = False
+         if admin == True:
+            return szablon.replace("{table}", prompt).replace("{subject}", "Oceny").replace("{user}", cherrypy.session["user"])
+         else:
+            raise cherrypy.HTTPRedirect('/oceny')
+      else:
+         raise cherrypy.HTTPRedirect('/index_login_page')
+
+   @cherrypy.expose
+   def oceny_admin_dodaj_submit(self, data, ocena, przedmiot, typ, uczen):
+      if cherrypy.session.get('logged_in'):
+         mycursor.execute("select email from admin")
+         admin_db = mycursor.fetchall()
+
+         for i in range(len(admin_db)):
+            if cherrypy.session["user"] == admin_db[0][i]:
+               admin = True
+            else:
+               admin = False
+         if admin == True:
+            mycursor.execute(f"select id from przedmiot where nazwa = '{przedmiot}'")
+            przedmiot_id = mycursor.fetchall()
+            mycursor.execute(f"INSERT INTO `oceny` (`id`, `id_przedmiot`, `ocena`, `typ`, `data`) VALUES ('{uczen}', '{przedmiot_id[0][0]}', '{ocena}', '{typ}', '{data}')")
+            mydb.commit()
+            raise cherrypy.HTTPRedirect(f"/oceny_admin?uczen={uczen}")
+         else:
+            raise cherrypy.HTTPRedirect('/oceny')
+      else:
+         raise cherrypy.HTTPRedirect('/index_login_page')
+
+   @cherrypy.expose
+   def oceny_admin_usun(self, uczen):
+      mycursor.execute(f"DELETE FROM `oceny` WHERE `oceny`.`id` = '{uczen}'")
+      mydb.commit()
+      raise cherrypy.HTTPRedirect(f'/oceny_admin?uczen={uczen}')
+      
 
 main = main()
 cherrypy.tree.mount(main, '/')

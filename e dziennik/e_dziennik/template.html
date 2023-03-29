@@ -63,7 +63,7 @@
 
     /* Treść strony */
     main {
-      max-width: 800px;
+      //max-width: 800px;
       margin: 0 auto;
       padding: 20px;
       width: inherit;
@@ -92,7 +92,7 @@
 
     th, td {
       border: 1px solid #ccc;
-      padding: 2px;
+      padding: 4px;
       text-align: center;
     }
 
@@ -122,11 +122,20 @@
 
     }
 
+    .user {
+      float: right;
+      margin-top: -30px;
+      background-color: #242424;
+      padding: 10px;
+      border-radius: 5px;
+    }
+
   </style>
 </head>
 <body>
   <header>
     <h1>E-dziennik</h1>
+      <p class="user">Zalogowano jako: <u>{user}</u></p>
   </header>
 
   <nav>
